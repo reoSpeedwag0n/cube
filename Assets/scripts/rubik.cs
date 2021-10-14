@@ -115,3 +115,4 @@ public class rubik : MonoBehaviour {
 		return sidePieces;
 	}
 }
+//chang
