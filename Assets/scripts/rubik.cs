@@ -11,17 +11,30 @@ using UnityEngine;
 public class rubik : MonoBehaviour {
 
 
-	//list of player/user controls
-	public KeyCode	U = KeyCode.UpArrow, R = KeyCode.RightArrow, F = KeyCode.RightAlt,
-					D = KeyCode.DownArrow, L = KeyCode.LeftArrow, B = KeyCode.LeftAlt,
-					CounterKey = KeyCode.LeftShift;
+		//User Inputs
+
+	[Header("Rotating sides")]				//The reason U is separate is to make it easier to look at in the inspector. The same thing applies below.
+	public KeyCode	U = KeyCode.UpArrow;
+	public KeyCode R = KeyCode.RightArrow, F = KeyCode.RightAlt,
+					D = KeyCode.DownArrow, L = KeyCode.LeftArrow, B = KeyCode.LeftAlt;
+	[Header("Rotating entirety")]
+	public KeyCode rotX = KeyCode.X;
+	public KeyCode rotY = KeyCode.Y, rotZ = KeyCode.Z;
+	[Header("Invert Input")]
+	public KeyCode CounterKey = KeyCode.LeftShift;
 
 	//set true or false based on CounterKey. Difference of U or U'. (Determines counter-clockwise, or clockwise)
 	public bool invertedInput = false;
 
+
+
+		//Background things
+	[Header("Collectives, etc.")]
+
 	//the "empty" gameobjects, which are the parents of the top, down, front, back, left, and right sides of the cube.
 	public List<GameObject> centerEmptys;
 	public GameObject[] pieces = new GameObject[54];
+	public GameObject parentEmpty;	//the "empty" gameobject to which all pieces are parented.
 
 
 
@@ -52,9 +65,19 @@ public class rubik : MonoBehaviour {
 			Rotate (invertedInput, Vector3.left);
 		if (Input.GetKeyDown (B))
 			Rotate (invertedInput, Vector3.forward);
+
+		if (Input.GetKeyDown (rotX))
+			RotCube (invertedInput, Vector3.right);
+		if (Input.GetKeyDown (rotY))
+			RotCube (invertedInput, Vector3.up);
+		if (Input.GetKeyDown (rotZ))
+			RotCube (invertedInput, Vector3.back);
+
 	}
 
-	void Rotate(bool isTrue, Vector3 v){
+
+
+	public void Rotate(bool isTrue, Vector3 v){
 		List<GameObject> selectedSide = getSide (v);
 		GameObject foster = new GameObject ();
 		foster.transform.position = v;
@@ -114,5 +137,18 @@ public class rubik : MonoBehaviour {
 
 		return sidePieces;
 	}
+
+
+	public void RotCube(bool b, Vector3 v) {
+		float ang = 45f;
+		if (!b)
+			ang = -45f;
+
+		parentEmpty.transform.RotateAround (parentEmpty.transform.position, v, ang);
+
+
+		//Vector3 newRot = parentEmpty.transform.rotation.eulerAngles + v * ang;		//trying to make it smooth. Didn't work.
+		//parentEmpty.transform.rotation = Quaternion.Slerp (parentEmpty.transform.localRotation, Quaternion.Euler (newRot), 7.5f * Time.deltaTime);
+	}
+
 }
-//chang
