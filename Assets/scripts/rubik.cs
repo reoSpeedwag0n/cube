@@ -95,6 +95,93 @@ public class rubik : MonoBehaviour {
 		Destroy (foster);
 	}
 
+
+	public void Rotate(string s){		//I know we were talking about passing along strings, so I figured, why not overload? Why not call the other?
+		bool isTrue = true;
+		Vector3 v = Vector3.zero;
+
+
+		//is the cube turning? or a side?
+		if (s == "X" || s == "X'" ||
+		    s == "Y" || s == "Y'" ||
+		    s == "Z" || s == "Z'") {
+
+			if (s == "X") {
+				v = Vector3.right;
+			} else if (s == "X'") {
+				isTrue = false;
+				v = Vector3.right;
+			}
+
+			if (s == "Y") {
+				v = Vector3.up;
+			} else if (s == "Y'") {
+				isTrue = false;
+				v = Vector3.right;
+			}
+
+			if (s == "Z") {
+				v = Vector3.back;
+			} else if (s == "Z'") {
+				isTrue = false;
+				v = Vector3.back;
+			}
+
+			RotCube (isTrue, v);
+
+
+
+		} else {
+
+			if (s == "U") {
+				v = Vector3.up;
+			} else if (s == "U'") {
+				v = Vector3.up;
+				isTrue = false;
+			}
+
+			if (s == "F") {
+				v = Vector3.back;
+			} else if (s == "F'") {
+				v = Vector3.back;
+				isTrue = false;
+			}
+
+			if (s == "R") {
+				v = Vector3.right;
+			} else if (s == "R'") {
+				v = Vector3.right;
+				isTrue = false;
+			}
+
+			if (s == "D") {
+				v = Vector3.down;
+			} else if (s == "D'") {
+				v = Vector3.down;
+				isTrue = false;
+			}
+
+			if (s == "L") {
+				v = Vector3.left;
+			} else if (s == "L'") {
+				v = Vector3.left;
+				isTrue = false;
+			}
+
+			if (s == "B") {
+				v = Vector3.forward;
+			} else if (s == "B'") {
+				v = Vector3.forward;
+				isTrue = false;
+			}
+
+
+
+			Rotate (isTrue, v);
+		}
+	}
+
+
 	List<GameObject> getSide(Vector3 v){
 		List<GameObject> sidePieces = new List<GameObject> ();
 		if (v.x != 0f) {	//left or right
