@@ -17,6 +17,9 @@ public class rubik : MonoBehaviour {
 	public KeyCode	U = KeyCode.UpArrow;
 	public KeyCode R = KeyCode.RightArrow, F = KeyCode.RightAlt,
 					D = KeyCode.DownArrow, L = KeyCode.LeftArrow, B = KeyCode.LeftAlt;
+
+	public float turnSpeed = 10f;	//gets multiplied by Time.deltaTime
+
 	[Header("Rotating entirety")]
 	public KeyCode rotX = KeyCode.X;
 	public KeyCode rotY = KeyCode.Y, rotZ = KeyCode.Z;
@@ -28,13 +31,20 @@ public class rubik : MonoBehaviour {
 
 
 
+
 		//Background things
 	[Header("Collectives, etc.")]
 
-	//the "empty" gameobjects, which are the parents of the top, down, front, back, left, and right sides of the cube.
-	public List<GameObject> centerEmptys;
+
+	public List<GameObject> centerEmptys;	//the "empty" gameobjects, which are the parents of the top, down, front, back, left, and right sides of the cube.
 	public GameObject[] pieces = new GameObject[54];
 	public GameObject parentEmpty;	//the "empty" gameobject to which all pieces are parented.
+
+	//smoothly turning
+	public bool somethingIsTurningRightNowSoAnimationBoolean = false;	//as named
+	public float Aang = 0f;			//because the local-scoped one only has one a.
+	public Vector3 globalV = Vector3.zero;
+	public GameObject turningCenterEmpty;
 
 
 
@@ -45,34 +55,57 @@ public class rubik : MonoBehaviour {
 
 
 	void Update () {
-		
-		//checking if U or U'
-		if (Input.GetKey (CounterKey))
-			invertedInput = true;
-		if (Input.GetKeyUp (CounterKey))
-			invertedInput = false;
 
-		//checking the other player inputs
-		if (Input.GetKeyDown (U))
-			Rotate (invertedInput, Vector3.up);
-		if (Input.GetKeyDown (R))
-			Rotate (invertedInput, Vector3.right);
-		if (Input.GetKeyDown (F))
-			Rotate (invertedInput, Vector3.back);
-		if (Input.GetKeyDown (D))
-			Rotate (invertedInput, Vector3.down);
-		if (Input.GetKeyDown (L))
-			Rotate (invertedInput, Vector3.left);
-		if (Input.GetKeyDown (B))
-			Rotate (invertedInput, Vector3.forward);
+		if (somethingIsTurningRightNowSoAnimationBoolean) {
+			//make turn smooth
+			parentEmpty.transform.RotateAround (parentEmpty.transform.position, globalV, Aang * Time.deltaTime);
 
-		if (Input.GetKeyDown (rotX))
-			RotCube (invertedInput, Vector3.right);
-		if (Input.GetKeyDown (rotY))
-			RotCube (invertedInput, Vector3.up);
-		if (Input.GetKeyDown (rotZ))
-			RotCube (invertedInput, Vector3.back);
 
+			if (Mathf.Round (parentEmpty.transform.rotation.eulerAngles.x) % 90 == 0 &&
+			    Mathf.Round (parentEmpty.transform.rotation.eulerAngles.y) % 90 == 0 &&
+			    Mathf.Round (parentEmpty.transform.rotation.eulerAngles.z) % 90 == 0) {
+
+				somethingIsTurningRightNowSoAnimationBoolean = false;
+				Vector3 newRot = new Vector3 (	Mathf.Round (parentEmpty.transform.rotation.eulerAngles.x),
+												Mathf.Round (parentEmpty.transform.rotation.eulerAngles.y),
+												Mathf.Round (parentEmpty.transform.rotation.eulerAngles.z));
+				parentEmpty.GetComponent<Transform> ().eulerAngles = newRot;
+			}
+
+
+
+		} else {	//when the cube is not rotating in whole or part, the player may input, or the cube may accept an input
+
+
+			//checking if U or U'
+			if (Input.GetKey (CounterKey))
+				invertedInput = true;
+			if (Input.GetKeyUp (CounterKey))
+				invertedInput = false;
+
+			//checking the other player inputs
+					//rotating a side
+			if (Input.GetKeyDown (U))
+				Rotate (invertedInput, Vector3.up);
+			if (Input.GetKeyDown (R))
+				Rotate (invertedInput, Vector3.right);
+			if (Input.GetKeyDown (F))
+				Rotate (invertedInput, Vector3.back);
+			if (Input.GetKeyDown (D))
+				Rotate (invertedInput, Vector3.down);
+			if (Input.GetKeyDown (L))
+				Rotate (invertedInput, Vector3.left);
+			if (Input.GetKeyDown (B))
+				Rotate (invertedInput, Vector3.forward);
+
+					//rotating the cube
+			if (Input.GetKeyDown (rotX))
+				RotCube (invertedInput, Vector3.left);
+			if (Input.GetKeyDown (rotY))
+				RotCube (invertedInput, Vector3.down);
+			if (Input.GetKeyDown (rotZ))
+				RotCube (invertedInput, Vector3.forward);
+		}
 	}
 
 
@@ -84,11 +117,11 @@ public class rubik : MonoBehaviour {
 
 		if (!isTrue) {
 			foreach (GameObject g in selectedSide) {
-				g.transform.RotateAround (foster.transform.position, v, 45f);
+				g.transform.RotateAround (foster.transform.position, v, turnSpeed);
 			}
 		} else {
 			foreach (GameObject g in selectedSide) {
-				g.transform.RotateAround (foster.transform.position, v, -45f);
+				g.transform.RotateAround (foster.transform.position, v, -turnSpeed);
 			}
 		}
 
@@ -102,29 +135,29 @@ public class rubik : MonoBehaviour {
 
 
 		//is the cube turning? or a side?
-		if (s == "X" || s == "X'" ||
-		    s == "Y" || s == "Y'" ||
-		    s == "Z" || s == "Z'") {
+		if (s == "x" || s == "x'" ||
+		    s == "y" || s == "y'" ||
+		    s == "z" || s == "z'") {
 
-			if (s == "X") {
-				v = Vector3.right;
-			} else if (s == "X'") {
+			if (s == "x") {
+				v = Vector3.left;
+			} else if (s == "x'") {
 				isTrue = false;
-				v = Vector3.right;
+				v = Vector3.left;
 			}
 
-			if (s == "Y") {
-				v = Vector3.up;
-			} else if (s == "Y'") {
+			if (s == "y") {
+				v = Vector3.down;
+			} else if (s == "y'") {
 				isTrue = false;
-				v = Vector3.right;
+				v = Vector3.down;
 			}
 
-			if (s == "Z") {
-				v = Vector3.back;
-			} else if (s == "Z'") {
+			if (s == "z") {
+				v = Vector3.forward;
+			} else if (s == "z'") {
 				isTrue = false;
-				v = Vector3.back;
+				v = Vector3.forward;
 			}
 
 			RotCube (isTrue, v);
@@ -227,15 +260,23 @@ public class rubik : MonoBehaviour {
 
 
 	public void RotCube(bool b, Vector3 v) {
-		float ang = 45f;
+		float ang = turnSpeed;
 		if (!b)
-			ang = -45f;
+			ang = -turnSpeed;
 
-		parentEmpty.transform.RotateAround (parentEmpty.transform.position, v, ang);
+
+		Aang = ang;
+		globalV = v;
+
+		//parentEmpty.transform.RotateAround (parentEmpty.transform.position, v, ang);
 
 
 		//Vector3 newRot = parentEmpty.transform.rotation.eulerAngles + v * ang;		//trying to make it smooth. Didn't work.
 		//parentEmpty.transform.rotation = Quaternion.Slerp (parentEmpty.transform.localRotation, Quaternion.Euler (newRot), 7.5f * Time.deltaTime);
+
+
+
+		somethingIsTurningRightNowSoAnimationBoolean = true;
 	}
 
 }
